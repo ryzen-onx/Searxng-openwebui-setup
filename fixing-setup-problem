@@ -1,0 +1,117 @@
+🧠 Self-Hosting SearXNG with Open WebUI on Windows using Docker 
+A beginner-friendly guide to integrate SearXNG (meta search engine) with Open WebUI for search using Docker on Windows
+
+---
+📌 Goal
+Integrate SearXNG as a web search provider for Open WebUI, enabling
+local LLMS to perform online search queries. We aim to:
+
+Self-host SearXNG using Docker
+
+Connet SearXNG to Open WebUI
+
+Solve issues like forbidden errors, DNS issues, and lack of results
+
+Keep the solution beginner-friendly and up-to-date
+
+---
+🧰Prerequisites
+Docker Desktop installed on Windows
+Basic knowledge of Docker containers
+Both Open WebuUI and SearXNG running as separate Docker containers
+
+---
+⚙️ Step-by-Step Setup
+1.🔹Run SearXNG in Docker
+You can pull and run the official SearXNG image:
+docker run -d --name searxng -p 8081:8080 -v searxng_data:/etc/searxng searxng/searxng
+after this, SearXNG should be accessible at:
+http://localhost:8081
+
+2.🔹 Enable Web Search Support in Open WebUI
+Open WebUI setting and add the SearXNG API URL under the Web
+Search section:
+http://host.docker.internal:8081/search?q={query}&format=json
+host.docker.internal is Docker's way to access the Windows host from a container on Windows/Mac
+
+---
+🔧Key Configuration in settings.yml
+Navigate inside the container or your mapped volume:
+Location:/etc/searxng/settings.yml
+Required Edits:
+
+server:
+ bind_address:
+secret_key: "your-secret-key"
+
+#Add this to allow Open WebUI to communicate with SearXNG
+allowed_hosts:
+ -"*"
+-"localhost"
+-"host.docker.internal"
+
+search:
+ formats:
+  -html
+  -json #✅ Add this line
+
+save the file after editing.
+
+---
+🌐 Fixing Internet Issues in SearXNG
+If your SearXNG container shows no search results, it likely can't 
+access the internet.
+
+✅ Fix:
+Open Docker Desktop -> Settings -> Resources -> Network
+Enable Host Networking 
+Click Apply & Restart
+
+---
+🔁 Why a Full System Restart Helped
+After config changes, your containers or Docker DNS cache might 
+reset immediately. Restarting your computer:
+Clears cached DNS entries
+Restarts Docker daemon
+Reloads container configuration
+
+This fixed issues like:
+Forbidden errors
+host.docker.internal not found
+Seach result not showing
+
+---
+✅ Final Working Setup
+SearXNG running in Docker on port 8081
+Edited settings.yml with allowed_host and json support
+Open WebUI Docker container pointing to:
+http://host.docker.internal:8081/search?q={query}&format=json
+Docker network setting adjusted
+System rebooted to apply changes
+
+---
+🧪Testing
+1. Visit in browser:
+http://localhost:8081/search?q=Iron+man&format=json
+You should see JSON results.
+
+2.Inside Open WebUI, perform a web search prompt. It should show 
+result fetched from your local SearchXNG.
+
+---
+📝 Summary & Why This Matters
+✅ NO need to build a complex Docker Compose setup
+✅ This method is simpler and beginner-friendly
+✅ Works on Windows with Docker Desktop
+✅ Helps integrate open-source tools like Open WebUI + SearXNG effectively
+
+---
+❤️ Credit & Arthor 
+This method was debugged, tested, and documented by @ritikraj-
+with a focus on simplicity, clarity, and helping others who are trying to 
+connect LLMs with real-time search engines.
+
+If you found this helpful, ⭐ star the repo or share the guide!
+
+---
+Stay curious, and keep learning!🧠🌐
